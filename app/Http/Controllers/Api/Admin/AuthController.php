@@ -23,7 +23,7 @@ class AuthController extends Controller
         // a wrong username doesn't return faster than a wrong password -
         // that timing difference is enough to let an attacker enumerate
         // valid usernames.
-        $hash = $admin?->password_hash ?? '$2y$10$invalidsaltinvalidsalt.invalidsalthashvalue1234567890';
+        $hash = $admin?->password_hash ?? '$2y$12$yh49h68ELHtcBJYpdRiYV.KLEe6gQdHq8haBG9Fxf53Sml/phdER.';
         $passwordMatches = Hash::check($data['password'], $hash);
 
         if (! $admin || ! $passwordMatches) {
