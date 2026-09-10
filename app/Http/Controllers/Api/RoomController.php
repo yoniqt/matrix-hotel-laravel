@@ -45,7 +45,10 @@ class RoomController extends Controller
             ->where('check_out_date', '>', $checkIn)
             ->pluck('room_id');
 
+        // A room under maintenance isn't bookable regardless of the
+        // date-based booking overlap check above.
         $rooms = Room::whereNotIn('id', $bookedRoomIds)
+            ->where('status', '!=', 'Maintenance')
             ->orderBy('room_number')
             ->get();
 

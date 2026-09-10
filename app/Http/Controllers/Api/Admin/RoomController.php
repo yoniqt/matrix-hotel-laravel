@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
+    private const STATUSES = ['Available', 'Occupied', 'Maintenance'];
+
     private function validated(Request $request): array
     {
         return $request->validate([
@@ -18,6 +20,7 @@ class RoomController extends Controller
             'room_type' => 'required|string',
             'price_per_night' => 'required|numeric',
             'capacity' => 'required|integer|min:1',
+            'status' => 'sometimes|in:'.implode(',', self::STATUSES),
         ]);
     }
 
@@ -55,6 +58,23 @@ class RoomController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Room updated.']);
+    }
+
+    // PATCH /api/admin/rooms/:id/status - quick housekeeping toggle,
+    // separate from the full edit form.
+    public function updateStatus(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'status' => 'required|in:'.implode(',', self::STATUSES),
+        ]);
+
+        $updated = Room::where('id', $id)->update($data);
+
+        if ($updated === 0) {
+            return response()->json(['success' => false, 'message' => 'Room not found.'], 404);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Room status updated.']);
     }
 
     // rooms.id has ON DELETE CASCADE from bookings, so a plain delete

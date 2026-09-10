@@ -18,10 +18,14 @@ Route::post('/bookings/reference/{reference}/cancel', [BookingController::class,
 Route::post('/admin/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+    Route::get('/stats', [AdminBookingController::class, 'stats']);
+
     Route::get('/bookings', [AdminBookingController::class, 'index']);
+    Route::post('/bookings', [AdminBookingController::class, 'store']);
     Route::patch('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel']);
 
     Route::post('/rooms', [AdminRoomController::class, 'store']);
     Route::put('/rooms/{id}', [AdminRoomController::class, 'update']);
+    Route::patch('/rooms/{id}/status', [AdminRoomController::class, 'updateStatus']);
     Route::delete('/rooms/{id}', [AdminRoomController::class, 'destroy']);
 });

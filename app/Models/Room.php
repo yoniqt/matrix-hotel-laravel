@@ -9,7 +9,7 @@ class Room extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['room_number', 'room_type', 'price_per_night', 'capacity'];
+    protected $fillable = ['room_number', 'room_type', 'price_per_night', 'capacity', 'status'];
 
     protected $casts = [
         'price_per_night' => 'decimal:2',

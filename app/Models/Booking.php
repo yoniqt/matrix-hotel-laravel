@@ -36,4 +36,22 @@ class Booking extends Model
     {
         return $this->belongsTo(Room::class);
     }
+
+    // No 0/O/1/I - easier to read at check-in.
+    private const REF_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+    public static function generateReference(): string
+    {
+        $code = '';
+        for ($i = 0; $i < 6; $i++) {
+            $code .= self::REF_CHARS[random_int(0, strlen(self::REF_CHARS) - 1)];
+        }
+
+        return "MTX-{$code}";
+    }
+
+    public static function nightsBetween(string $checkIn, string $checkOut): int
+    {
+        return (int) round((strtotime($checkOut) - strtotime($checkIn)) / 86400);
+    }
 }
