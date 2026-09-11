@@ -70,6 +70,10 @@ class BookingController extends Controller
             ]);
         });
 
+        if ($booking->payment_status === 'paid') {
+            Booking::sendConfirmationEmail($booking->booking_reference);
+        }
+
         $room = Room::find($data['room_id']);
         $nights = Booking::nightsBetween($data['check_in_date'], $data['check_out_date']);
 

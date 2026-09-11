@@ -219,6 +219,8 @@ class BookingController extends Controller
             return response()->json(['success' => false, 'message' => 'No pending booking found for that reference.'], 404);
         }
 
+        Booking::sendConfirmationEmail($reference);
+
         return response()->json(['success' => true, 'message' => 'Payment marked as received.']);
     }
 
