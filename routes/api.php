@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     Route::get('/bookings', [AdminBookingController::class, 'index']);
     Route::post('/bookings', [AdminBookingController::class, 'store']);
+    Route::put('/bookings/{id}', [AdminBookingController::class, 'update']);
     Route::patch('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel']);
 
     Route::post('/rooms', [AdminRoomController::class, 'store']);

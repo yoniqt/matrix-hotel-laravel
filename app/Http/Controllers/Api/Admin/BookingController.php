@@ -122,9 +122,53 @@ class BookingController extends Controller
                 'guest_phone' => $b->guest->phone,
                 'room_number' => $b->room->room_number,
                 'room_type' => $b->room->room_type,
+                'price_per_night' => $b->room->price_per_night,
             ]));
 
         return response()->json(['success' => true, 'data' => $bookings]);
+    }
+
+    // PUT /api/admin/bookings/:id - reschedule (dates and/or room) without
+    // having to cancel and recreate. Guest info is untouched; this is only
+    // for the stay itself.
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $booking = Booking::find($id);
+
+        if (! $booking) {
+            return response()->json(['success' => false, 'message' => 'Booking not found.'], 404);
+        }
+
+        $data = $request->validate([
+            'room_id' => 'required|integer|exists:rooms,id',
+            'check_in_date' => 'required|date',
+            'check_out_date' => 'required|date',
+        ]);
+
+        if (strtotime($data['check_in_date']) >= strtotime($data['check_out_date'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Check-out date must be after check-in date.',
+            ], 400);
+        }
+
+        $conflict = Booking::where('room_id', $data['room_id'])
+            ->where('id', '!=', $id)
+            ->where('status', '!=', 'cancelled')
+            ->where('check_in_date', '<', $data['check_out_date'])
+            ->where('check_out_date', '>', $data['check_in_date'])
+            ->exists();
+
+        if ($conflict) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This room is not available for those dates.',
+            ], 409);
+        }
+
+        $booking->update($data);
+
+        return response()->json(['success' => true, 'message' => 'Booking updated.']);
     }
 
     // PATCH /api/admin/bookings/:id/cancel - admin override, works
