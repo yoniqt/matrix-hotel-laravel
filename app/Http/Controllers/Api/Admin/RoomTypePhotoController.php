@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Room;
 use App\Models\RoomTypePhoto;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,12 +11,14 @@ use Illuminate\Support\Facades\Storage;
 
 class RoomTypePhotoController extends Controller
 {
-    private const ROOM_TYPES = ['Standard', 'Deluxe', 'Suite', 'Family'];
-
     // POST /api/admin/room-types/{type}/photos
     public function store(Request $request, string $type): JsonResponse
     {
-        if (! in_array($type, self::ROOM_TYPES, true)) {
+        // Room types aren't a fixed enum - the admin can create a new one
+        // just by naming it on a room. Validate against what actually
+        // exists rather than a hardcoded list, so a newly-added type can
+        // immediately get photos too.
+        if (! Room::where('room_type', $type)->exists()) {
             return response()->json(['success' => false, 'message' => 'Unknown room type.'], 404);
         }
 
