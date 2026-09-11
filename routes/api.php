@@ -14,6 +14,7 @@ Route::get('/rooms/available', [RoomController::class, 'available']);
 Route::get('/room-types/photos', [RoomTypePhotoController::class, 'index']);
 
 Route::post('/bookings', [BookingController::class, 'store']);
+Route::get('/bookings/lookup', [BookingController::class, 'lookup']);
 Route::get('/bookings/reference/{reference}', [BookingController::class, 'showByReference']);
 Route::post('/bookings/reference/{reference}/simulate-payment', [BookingController::class, 'simulatePayment']);
 Route::post('/bookings/reference/{reference}/cancel', [BookingController::class, 'cancel']);

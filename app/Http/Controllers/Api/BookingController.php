@@ -129,6 +129,35 @@ class BookingController extends Controller
         ], 201);
     }
 
+    // Shared by showByReference (used internally by the payment modal,
+    // which already knows the reference from just having created the
+    // booking) and lookup (the public "Find My Booking" page, which
+    // additionally requires the email to match before revealing anything).
+    private function bookingResponseData(string $reference, $bookings): array
+    {
+        $first = $bookings->first();
+        $nights = $this->nightsBetween($first->check_in_date, $first->check_out_date);
+        $totalAmount = $bookings->sum(fn ($b) => $b->room->price_per_night * $nights);
+
+        return [
+            'booking_reference' => $reference,
+            'status' => $first->status,
+            'payment_status' => $first->payment_status,
+            'guest_name' => $first->guest->name,
+            'guest_email' => $first->guest->email,
+            'check_in_date' => $first->check_in_date->format('Y-m-d'),
+            'check_out_date' => $first->check_out_date->format('Y-m-d'),
+            'expires_at' => $first->created_at->copy()->addMinutes(self::PENDING_EXPIRY_MINUTES)->toIso8601String(),
+            'nights' => $nights,
+            'total_amount' => $totalAmount,
+            'rooms' => $bookings->map(fn ($b) => [
+                'room_number' => $b->room->room_number,
+                'room_type' => $b->room->room_type,
+                'price_per_night' => $b->room->price_per_night,
+            ]),
+        ];
+    }
+
     // GET /api/bookings/reference/:ref - look up a booking group by its
     // shared reference code. Used by the payment modal to poll for a
     // payment_status change.
@@ -144,29 +173,37 @@ class BookingController extends Controller
             return response()->json(['success' => false, 'message' => 'Booking not found.'], 404);
         }
 
-        $first = $bookings->first();
-        $nights = $this->nightsBetween($first->check_in_date, $first->check_out_date);
-        $totalAmount = $bookings->sum(fn ($b) => $b->room->price_per_night * $nights);
+        return response()->json(['success' => true, 'data' => $this->bookingResponseData($reference, $bookings)]);
+    }
+
+    // GET /api/bookings/lookup?reference=X&email=Y - the public "Find My
+    // Booking" self-service page. Requires the email to match the
+    // reference's guest, unlike showByReference, so a guessed/leaked
+    // reference alone isn't enough to see someone else's booking.
+    public function lookup(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'reference' => 'required|string',
+            'email' => 'required|email',
+        ]);
+
+        $this->expireStalePending($data['reference']);
+
+        $bookings = Booking::with(['guest', 'room'])
+            ->where('booking_reference', $data['reference'])
+            ->whereHas('guest', fn ($q) => $q->where('email', $data['email']))
+            ->get();
+
+        if ($bookings->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No booking found with that reference and email.',
+            ], 404);
+        }
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'booking_reference' => $reference,
-                'status' => $first->status,
-                'payment_status' => $first->payment_status,
-                'guest_name' => $first->guest->name,
-                'guest_email' => $first->guest->email,
-                'check_in_date' => $first->check_in_date->format('Y-m-d'),
-                'check_out_date' => $first->check_out_date->format('Y-m-d'),
-                'expires_at' => $first->created_at->copy()->addMinutes(self::PENDING_EXPIRY_MINUTES)->toIso8601String(),
-                'nights' => $nights,
-                'total_amount' => $totalAmount,
-                'rooms' => $bookings->map(fn ($b) => [
-                    'room_number' => $b->room->room_number,
-                    'room_type' => $b->room->room_type,
-                    'price_per_night' => $b->room->price_per_night,
-                ]),
-            ],
+            'data' => $this->bookingResponseData($data['reference'], $bookings),
         ]);
     }
 
