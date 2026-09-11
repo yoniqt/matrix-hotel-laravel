@@ -24,7 +24,7 @@ class BookingController extends Controller
             'email' => 'required|email',
             'phone' => 'required|string',
             'room_id' => 'required|integer|exists:rooms,id',
-            'check_in_date' => 'required|date',
+            'check_in_date' => 'required|date|after_or_equal:today',
             'check_out_date' => 'required|date',
             'special_requests' => 'nullable|string',
             'guests_count' => 'nullable|integer|min:1',
