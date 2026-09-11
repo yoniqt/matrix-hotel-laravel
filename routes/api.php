@@ -3,12 +3,15 @@
 use App\Http\Controllers\Api\Admin\AuthController;
 use App\Http\Controllers\Api\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Api\Admin\RoomController as AdminRoomController;
+use App\Http\Controllers\Api\Admin\RoomTypePhotoController as AdminRoomTypePhotoController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\RoomController;
+use App\Http\Controllers\Api\RoomTypePhotoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/rooms', [RoomController::class, 'index']);
 Route::get('/rooms/available', [RoomController::class, 'available']);
+Route::get('/room-types/photos', [RoomTypePhotoController::class, 'index']);
 
 Route::post('/bookings', [BookingController::class, 'store']);
 Route::get('/bookings/reference/{reference}', [BookingController::class, 'showByReference']);
@@ -28,4 +31,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::put('/rooms/{id}', [AdminRoomController::class, 'update']);
     Route::patch('/rooms/{id}/status', [AdminRoomController::class, 'updateStatus']);
     Route::delete('/rooms/{id}', [AdminRoomController::class, 'destroy']);
+
+    Route::post('/room-types/{type}/photos', [AdminRoomTypePhotoController::class, 'store']);
+    Route::delete('/room-type-photos/{id}', [AdminRoomTypePhotoController::class, 'destroy']);
 });
