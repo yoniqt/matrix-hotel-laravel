@@ -49,7 +49,7 @@ class ChatController extends Controller
             Free cancellation up to 48 hours before check-in. Cancellations after that are charged for one night's stay.
 
             BOOKING:
-            Guests book directly on the website by picking dates on the homepage, choosing a room, and paying online. After booking, guests can look up or cancel a still-pending booking anytime on the "Find My Booking" page using their booking reference and email. A confirmation email is sent once payment is completed.
+            Guests book directly on the website by picking dates on the homepage, choosing a room, and paying online. After booking, guests can look up their booking anytime on the "Find My Booking" page using their booking reference and email. Self-service cancellation there only works while the booking is still pending payment - once a booking is paid/confirmed, it can no longer be cancelled online; the guest must contact the hotel directly by phone or email to cancel or make changes. A confirmation email is sent once payment is completed.
 
             LOCATION & CONTACT:
             123 Bonifacio Global City, Taguig, Metro Manila, Philippines. Phone: +63 900 000 0000. Email: stay@thematrixhotel.com.
