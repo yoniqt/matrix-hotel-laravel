@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::patch('/bookings/{id}/confirm-payment', [AdminBookingController::class, 'confirmPayment']);
     Route::patch('/bookings/{id}/cancel', [AdminBookingController::class, 'cancel']);
     Route::patch('/bookings/{id}/archive', [AdminBookingController::class, 'archive']);
+    Route::patch('/bookings/{id}/unarchive', [AdminBookingController::class, 'unarchive']);
 
     Route::post('/rooms', [AdminRoomController::class, 'store']);
     Route::put('/rooms/{id}', [AdminRoomController::class, 'update']);

@@ -118,7 +118,6 @@ class BookingController extends Controller
     public function index(): JsonResponse
     {
         $bookings = Booking::with(['guest', 'room'])
-            ->where('archived', false)
             ->orderByDesc('check_in_date')
             ->get()
             ->map(fn (Booking $b) => array_merge($b->toArray(), [
@@ -214,6 +213,19 @@ class BookingController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Booking archived.']);
+    }
+
+    // PATCH /api/admin/bookings/:id/unarchive - brings a booking back into
+    // the default admin list.
+    public function unarchive(int $id): JsonResponse
+    {
+        $updated = Booking::where('id', $id)->update(['archived' => false]);
+
+        if ($updated === 0) {
+            return response()->json(['success' => false, 'message' => 'Booking not found.'], 404);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Booking unarchived.']);
     }
 
     // PATCH /api/admin/bookings/:id/cancel - admin override, works
