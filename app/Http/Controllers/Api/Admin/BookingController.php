@@ -175,6 +175,31 @@ class BookingController extends Controller
         return response()->json(['success' => true, 'message' => 'Booking updated.']);
     }
 
+    // PATCH /api/admin/bookings/:id/confirm-payment - front desk confirms a
+    // pending walk-in was actually paid (e.g. cash handed over after the
+    // booking was created as pending). Sends the same confirmation email
+    // the guest-facing payment flow sends.
+    public function confirmPayment(int $id): JsonResponse
+    {
+        $booking = Booking::find($id);
+
+        if (! $booking) {
+            return response()->json(['success' => false, 'message' => 'Booking not found.'], 404);
+        }
+
+        if ($booking->payment_status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This booking is not pending payment.',
+            ], 400);
+        }
+
+        $booking->update(['payment_status' => 'paid']);
+        Booking::sendConfirmationEmail($booking->booking_reference);
+
+        return response()->json(['success' => true, 'message' => 'Payment confirmed.']);
+    }
+
     // PATCH /api/admin/bookings/:id/cancel - admin override, works
     // regardless of payment_status (unlike the guest-facing cancel route,
     // which only works while a booking is still pending payment).
