@@ -118,6 +118,7 @@ class BookingController extends Controller
     public function index(): JsonResponse
     {
         $bookings = Booking::with(['guest', 'room'])
+            ->where('archived', false)
             ->orderByDesc('check_in_date')
             ->get()
             ->map(fn (Booking $b) => array_merge($b->toArray(), [
@@ -198,6 +199,21 @@ class BookingController extends Controller
         Booking::sendConfirmationEmail($booking->booking_reference);
 
         return response()->json(['success' => true, 'message' => 'Payment confirmed.']);
+    }
+
+    // PATCH /api/admin/bookings/:id/archive - hides a booking from the
+    // default admin list without deleting its history. Only meaningful for
+    // cancelled bookings, but not restricted server-side in case an admin
+    // wants to tidy up old completed stays too.
+    public function archive(int $id): JsonResponse
+    {
+        $updated = Booking::where('id', $id)->update(['archived' => true]);
+
+        if ($updated === 0) {
+            return response()->json(['success' => false, 'message' => 'Booking not found.'], 404);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Booking archived.']);
     }
 
     // PATCH /api/admin/bookings/:id/cancel - admin override, works

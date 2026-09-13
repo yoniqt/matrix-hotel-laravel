@@ -22,12 +22,14 @@ class Booking extends Model
         'guests_count',
         'booking_reference',
         'payment_status',
+        'archived',
     ];
 
     protected $casts = [
         'check_in_date' => 'date:Y-m-d',
         'check_out_date' => 'date:Y-m-d',
         'created_at' => 'datetime',
+        'archived' => 'boolean',
     ];
 
     public function guest(): BelongsTo
