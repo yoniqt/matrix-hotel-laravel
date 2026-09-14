@@ -87,7 +87,7 @@ class BookingController extends Controller
         }
 
         $result = DB::transaction(function () use ($data) {
-            $guest = Guest::firstOrCreate(
+            $guest = Guest::updateOrCreate(
                 ['email' => $data['email']],
                 ['name' => $data['name'], 'phone' => $data['phone']]
             );
